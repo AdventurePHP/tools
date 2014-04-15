@@ -22,54 +22,74 @@ echo "::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 echo
 
 ####################################################################################################
-# process params:
-# - svntree="1.10": used to get the release files from the svn (branches/[php4|php5]/<svntree>)
-# - buildvers="1.10-RC1": the number of the build used in the file names
-# - config file location: configuration file to setup e.g. svn path, docs output part
-#
+# footer function
+function displayFooter() {
+   echo
+   echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+   echo -n "end at  : "
+   date +"%Y-%m-%d, %H:%M:%S"
+   echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+}
+
+####################################################################################################
+# process params
 CONF=
-SVNTREE=
+GIT_BRANCH=
 BUILDVERS=
 MODULES=all
-while getopts "s:v:c:m:" option
+USAGE=0
+while getopts "b:v:c:m:h" option
 do
   case $option in
     c) CONF=$OPTARG;;
-    s) SVNTREE=$OPTARG;;
+    b) GIT_BRANCH=$OPTARG;;
     v) BUILDVERS=$OPTARG;;
     m) MODULES=$OPTARG;;
+    h) USAGE=1
   esac
 done
 shift $(($OPTIND - 1))
 
 # check params
-if [ -z "$CONF" ] || [ -z "$SVNTREE" ] || [ -z "$BUILDVERS" ] || [ -z "$MODULES" ]
+if [ -z "$CONF" ] || [ -z "$GIT_BRANCH" ] || [ -z "$BUILDVERS" ] || [ -z "$MODULES" ] || [ "$USAGE" == "1" ]
 then
-   echo "[ERROR] not enough arguments"
-   echo "Usage: $(basename $0) -c <config-file> -s <svn-subtree> -v <build-version> [-m <modules-to-build>]"
+   # displax error in case of issues with the call
+   if [ "$USAGE" == "0" ]
+   then
+      echo "[ERROR] not enough arguments"
+   fi
+
+   echo "Usage: $(basename $0) -c <config-file> -b <git branch> -v <build-version> [-m <modules-to-build>] [-o]"
    echo
-   echo "Please note: <subversion-subtree> must be replaced with the current version number of the SVN sub-tree and <build-version> indicates the version number in the release files."
+   echo "Please note: <git branch> must be replaced with the name of the GIT branch and <build-version> indicates the version number in the release files."
+   echo "Using the -o parameter you can create a build with the sources downloaded beforehand."
    echo "The configuration file referred to must specify the following parameters:"
    echo
-   echo "- DOCS_SOURCE_PATH: The source location where the APF documentation page is checked out on local disk."
-   echo "- CODE_SOURCE_PATH: The source location where the APF sources are checked out on local disk."
-   echo "- BUILDPATH       : The path where the build is created and stored."
-   echo "- DOKUPPATH       : The path where the documentation is generated at."
-   echo "- DOKULOGPATH     : The path where the documentation generation logs are stored."
-   echo "- DOXYGEN_BIN     : The doxygen binary."
+   echo "- CODE_LOCAL_REPO_PATH (opt): The source location where the APF sources are checked out on local disk."
+   echo "- DOCS_LOCAL_REPO_PATH (opt): The source location where the APF documentation page is checked out on local disk."
+   echo "- BUILDPATH                 : The path where the build is created and stored."
+   echo "- DOCS_GENERATION_PATH      : The path where the documentation is generated at."
+   echo "- DOCS_GENERATION_LOG_PATH  : The path where the documentation generation logs are stored."
+   echo "- DOXYGEN_BIN               : The doxygen binary."
    echo
-   echo "The list of modules (-m) can either be \"all\" (default) or a comma-separated list of the following items:"
+   echo "In case the configuration defines \"DOCS_LOCAL_REPO_PATH\" and/or \"CODE_LOCAL_REPO_PATH\" the build script tries to use a local clone of the APF repo(s)."
+   echo
+   echo "The list of modules (-m) can either be \"all\" (default) or a comma-separated list of the following items (or just one):"
    echo
    echo "- docs      : APF doxygen documentation."
    echo "- codepack  : Code release files."
    echo "- configpack: Sample configuration files."
    echo "- demopack  : Sandbox release files."
    echo "- examples  : Implementation examples (vbc, modules, calc)."
+
+   # display footer, since we end here...
+   displayFooter
+
    exit 1
 fi
 
 # gather current directory
-DIR=$(cd $(basename "$0") && pwd)
+DIR=$(cd $(dirname "$0"); pwd)
 
 ####################################################################################################
 # check enabled modules
@@ -101,6 +121,14 @@ then
 fi
 
 ####################################################################################################
+# reset parameters for safety reasons
+CODE_LOCAL_REPO_PATH=
+DOCS_LOCAL_REPO_PATH=
+BUILDPATH=
+DOCS_GENERATION_PATH=
+DOCS_GENERATION_LOG_PATH=
+DOXYGEN_BIN=
+
 # setup base paths
 if [ -f $CONF ]
 then
@@ -111,34 +139,36 @@ else
    exit 1
 fi
 
-# check configuration parameters' validity
-if [ -z "$DOCS_SOURCE_PATH" ] || [ ! -d "$DOCS_SOURCE_PATH" ]
+# check configuration parameters' validity and manage default values
+if [ -z "$CODE_LOCAL_REPO_PATH" ] || [ ! -d "$CODE_LOCAL_REPO_PATH" ]
 then
-    echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOCS_SOURCE_PATH\" missing or invalid!"
-    exit 1
+   GIT_CODE_URL=https://github.com/AdventurePHP/code.git
+else
+   GIT_CODE_URL=$CODE_LOCAL_REPO_PATH
 fi
 
-if [ -z "$CODE_SOURCE_PATH" ] || [ ! -d "$CODE_SOURCE_PATH" ]
+if [ -z "$DOCS_LOCAL_REPO_PATH" ] || [ ! -d "$DOCS_LOCAL_REPO_PATH" ]
 then
-    echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"CODE_SOURCE_PATH\" missing or invalid!"
-    exit 1
+   GIT_DOCS_URL=https://github.com/AdventurePHP/docs.git
+else
+   GIT_DOCS_URL=$DOCS_LOCAL_REPO_PATH
 fi
 
 if [ -z "$BUILDPATH" ] || [ ! -d "$BUILDPATH" ]
 then
-    echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"BUILDPATH\" missing or invalid!"
+    echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"BUILDPATH\" missing or invalid ot points to a non-existing directory!"
     exit 1
 fi
 
-if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOKUPPATH" ] || [ ! -d "$DOKUPPATH" ])
+if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOCS_GENERATION_PATH" ] || [ ! -d "$DOCS_GENERATION_PATH" ])
 then
-   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOKUPPATH\" missing or invalid!"
+   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOCS_GENERATION_PATH\" missing or invalid!"
    exit 1
 fi
 
-if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOKULOGPATH" ] || [ ! -d "$DOKULOGPATH" ])
+if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOCS_GENERATION_LOG_PATH" ] || [ ! -d "$DOCS_GENERATION_LOG_PATH" ])
 then
-   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOKULOGPATH\" missing or invalid!"
+   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOCS_GENERATION_LOG_PATH\" missing or invalid!"
    exit 1
 fi
 
@@ -150,7 +180,7 @@ fi
 
 ####################################################################################################
 
-echo "[INFO] Set global parameters"
+echo "[INFO] Set global parameters ..."
 RELEASEPATH=$BUILDPATH/RELEASES
 DISTRINAME=apf
 BUILDNUMBR=$(date +"%Y-%m-%d-%H%M")
@@ -160,7 +190,7 @@ DISTRIARCH_PHP5=php5
 USER_NOBODY=nobody
 GROUP_NOBODY=None
 
-echo "[INFO] current version to build: '$BUILDVERS-$BUILDNUMBR'"
+echo "[INFO] Current build version: $BUILDVERS-$BUILDNUMBR"
 
 ####################################################################################################
 
@@ -169,21 +199,48 @@ mkdir -p $CURRENTRELEASEPATH
 
 ####################################################################################################
 
+echo "[INFO] Exporting code branch $GIT_BRANCH to workspace ..."
+
+# create source tree for code
+WORKSPACE=$CURRENTRELEASEPATH/workspace
+CODE_SOURCE_PATH=$WORKSPACE/code
+DOCS_SOURCE_PATH=$WORKSPACE/docs
+
+mkdir -p $CODE_SOURCE_PATH
+mkdir -p $DOCS_SOURCE_PATH
+
+# clone code to local disk
+cd $CODE_SOURCE_PATH
+git clone --depth 1 --branch $GIT_BRANCH $GIT_CODE_URL . >/dev/null 2>&1
+rm -rf $CODE_SOURCE_PATH/.git
+
+# clone docs to local disk
+cd $DOCS_SOURCE_PATH
+git clone --depth 1 --branch master $GIT_DOCS_URL . >/dev/null 2>&1
+rm -rf $DOCS_SOURCE_PATH/.git
+
+####################################################################################################
+
 if [ "$DOCS_ENABLED" == "1" ]
 then
    echo "[INFO] generate documentation"
-   if [ ! -z "$DOKULOGPATH" ]
+   if [ ! -z "$DOCS_GENERATION_LOG_PATH" ]
    then
-      rm -f $DOKULOGPATH/* >/dev/null 2>&1
+      rm -f $DOCS_GENERATION_LOG_PATH/* >/dev/null 2>&1
    fi
 
-   if [ ! -z "$DOKUPPATH" ]
+   if [ ! -z "$DOCS_GENERATION_PATH" ]
    then
-      rm -rf $DOKUPPATH/* >/dev/null 2>&1
+      rm -rf $DOCS_GENERATION_PATH/* >/dev/null 2>&1
    fi
 
-   # TODO refactor to use with GIT repo structure (source location different, structure different, ...)
-   cat "$DIR/apf_docs.conf" | sed -e "s/{{VERSION}}/$BUILDVERS/" -e "s/{{SVNTREE}}/$SVNTREE/g" -e "s/{{DOCS_GENERATION_DIR}}/$DOKUPPATH/" -e "s/{{BUILD_DIR}}//" -e "s/{{BUILD_DIR}}/$DIR/"| $DOXYGEN_BIN - > $DOKULOGPATH/apf_docs.log 2> $DOKULOGPATH/apf_docs.err
+   # generate docs injecting build configuration params
+   cat "$DIR/apf_docs.conf" \
+      | awk -v r=$BUILDVERS '{ gsub("{{VERSION}}", r); print $0; }' \
+      | awk -v r=$CODE_SOURCE_PATH '{ gsub("{{SOURCE_FOLDER}}", r); print $0; }' \
+      | awk -v r=$DOCS_GENERATION_PATH '{ gsub("{{DOCS_GENERATION_DIR}}", r); print $0; }' \
+      | awk -v r=$DIR '{ gsub("{{BUILD_DIR}}", r); print $0; }' \
+      | $DOXYGEN_BIN - #> $DOCS_GENERATION_LOG_PATH/apf_docs.log 2>&1
 fi
 
 ####################################################################################################
@@ -194,10 +251,10 @@ then
    DOKU_HTML_PATH=$CURRENTRELEASEPATH/docs/html
    mkdir -p $DOKU_HTML_PATH
 
-   cp -rf $DOKUPPATH/docs/*.html $DOKUPPATH/docs/*.png $DOKUPPATH/docs/*.css $DOKUPPATH/docs/*.js $DOKU_HTML_PATH
+   cp -rf $DOCS_GENERATION_PATH/docs/*.html $DOCS_GENERATION_PATH/docs/*.png $DOCS_GENERATION_PATH/docs/*.css $DOCS_GENERATION_PATH/docs/*.js $DOKU_HTML_PATH
 
    # fix for STRIP_FROM_PATH does not effect example page :(
-   STRIP_FROM_PATH=$(cat "$DIR/apf_docs.conf" | grep -e "^STRIP_FROM_PATH" | cut -d "=" -f 2 | tr -d " " | sed -e "s/{{SVNTREE}}/$SVNTREE/g" -e "s/\//\\\\\//g")
+   STRIP_FROM_PATH=$(cat "$DIR/apf_docs.conf" | grep -e "^STRIP_FROM_PATH" | cut -d "=" -f 2 | tr -d " " | sed -e "s/{{SOURCE_FOLDER}}/$DOCS_GENERATION_PATH/g" -e "s/\//\\\\\//g")
    for file in $(grep -R "$STRIP_FROM_PATH" $DOKU_HTML_PATH | cut -d ":" -f1 | sort | uniq)
    do
       sed -i -e "s/$STRIP_FROM_PATH/\/APF/g" $file;
@@ -236,10 +293,10 @@ then
     mkdir -p $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF
 
     # code files
-    rsync -rt --exclude=".svn" --exclude=".git" --exclude="/config" --exclude="examples" --exclude="tests" $CODE_SOURCE_PATH/php5/$SVNTREE/* $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/
+    rsync -rt --exclude="/config" --exclude="examples" --exclude="tests" $CODE_SOURCE_PATH/* $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/
 
     # license file
-    cp $BUILDPATH/lgpl-3.0.txt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
+    cp $DIR/lgpl-3.0.txt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
 
     find $CURRENTRELEASEPATH/$DISTRIARCH_PHP5 -type f -exec touch {} \;
     find $CURRENTRELEASEPATH/$DISTRIARCH_PHP5 -type f -exec chmod 644 {} \;
@@ -279,10 +336,10 @@ then
    BUILDTMP_CONGIGPACK_PHP5=$CURRENTRELEASEPATH/configpack_noarch
    mkdir -p $BUILDTMP_CONGIGPACK_PHP5
 
-   rsync -rt --exclude=".svn" --exclude=".git" $CODE_SOURCE_PATH/php5/$SVNTREE/config/* $BUILDTMP_CONGIGPACK_PHP5/config
+   rsync -rt $CODE_SOURCE_PATH/config/* $BUILDTMP_CONGIGPACK_PHP5/config
 
    # license file
-   cp $BUILDPATH/lgpl-3.0.txt $BUILDTMP_CONGIGPACK_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_CONGIGPACK_PHP5/
 
    find $BUILDTMP_CONGIGPACK_PHP5 -type f -exec touch {} \;
    find $BUILDTMP_CONGIGPACK_PHP5 -type f -exec chmod 644 {} \;
@@ -293,12 +350,11 @@ then
    CONFIGPACKZIPFILENAME=$DISTRINAME-configpack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_NOARCH
    cd $BUILDTMP_CONGIGPACK_PHP5
 
-   # TODO: fix license file inclusion
-   zip -r $CONFIGPACKZIPFILENAME.zip config -i "\*.ini" -i "\*.sql" >/dev/null 2>&1
+   zip -r $CONFIGPACKZIPFILENAME.zip . >/dev/null 2>&1
    mv $CONFIGPACKZIPFILENAME.zip $CURRENTRELEASEPATH/download/
-   tar --exclude=.svn --exclude=.git -czf $CONFIGPACKZIPFILENAME.tar.gz config >/dev/null 2>&1
+   tar -czf $CONFIGPACKZIPFILENAME.tar.gz * >/dev/null 2>&1
    mv $CONFIGPACKZIPFILENAME.tar.gz $CURRENTRELEASEPATH/download/
-   tar --exclude=.svn --exclude=.git -cjf $CONFIGPACKZIPFILENAME.tar.bz2 config >/dev/null 2>&1
+   tar -cjf $CONFIGPACKZIPFILENAME.tar.bz2 * >/dev/null 2>&1
    mv $CONFIGPACKZIPFILENAME.tar.bz2 $CURRENTRELEASEPATH/download/
    cd - >/dev/null 2>&1
 fi
@@ -312,16 +368,17 @@ then
    mkdir -p $BUILDTMP_DEMOPACK_PHP5
 
    # setup basic files
-   rsync -rt --exclude=".svn" --exclude=".git" $CODE_SOURCE_PATH/php5/$SVNTREE/examples/sandbox/* $BUILDTMP_DEMOPACK_PHP5/
+   rsync -rt $CODE_SOURCE_PATH/examples/sandbox/* $BUILDTMP_DEMOPACK_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_DEMOPACK_PHP5/APF/
 
    # license file
-   cp $BUILDPATH/lgpl-3.0.txt $BUILDTMP_DEMOPACK_PHP5/
-   cp $BUILDPATH/MIT-LICENSE.txt $BUILDTMP_DEMOPACK_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_DEMOPACK_PHP5/
+   cp $DIR/MIT-LICENSE.txt $BUILDTMP_DEMOPACK_PHP5/
 
    # add images from the "normal" documentation page
+   mkdir -p $BUILDTMP_DEMOPACK_PHP5/images
    cp $DOCS_SOURCE_PATH/media/img/apf-logo.png $BUILDTMP_DEMOPACK_PHP5/images/
    cp $DOCS_SOURCE_PATH/media/img/icons/err-box.png $BUILDTMP_DEMOPACK_PHP5/images/
    cp $DOCS_SOURCE_PATH/media/img/icons/hint-box.png $BUILDTMP_DEMOPACK_PHP5/images/
@@ -331,6 +388,7 @@ then
    cp $DOCS_SOURCE_PATH/media/content/frontcontroller_timing_model.png $BUILDTMP_DEMOPACK_PHP5/images/
 
    # add selection of content
+   mkdir -p $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content
    cp $DOCS_SOURCE_PATH/APF/sites/apf/pres/content/c_*_154_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
    cp $DOCS_SOURCE_PATH/APF/sites/apf/pres/content/c_*_013_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
    cp $DOCS_SOURCE_PATH/APF/sites/apf/pres/content/c_*_014_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
@@ -380,13 +438,13 @@ then
    mkdir -p $BUILDTMP_VBC_PHP5
 
    # setup basic files
-   rsync -rt --exclude=".svn" --exclude=".git" --exclude="README.txt" $CODE_SOURCE_PATH/php5/$SVNTREE/examples/viewbasedcaching/* $BUILDTMP_VBC_PHP5/
+   rsync -rt --exclude="README.txt" --exclude="migration" $CODE_SOURCE_PATH/examples/viewbasedcaching/* $BUILDTMP_VBC_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_VBC_PHP5/APF/
 
    # license file
-   cp $BUILDPATH/lgpl-3.0.txt $BUILDTMP_VBC_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_VBC_PHP5/
 
    find $BUILDTMP_VBC_PHP5 -type f -exec touch {} \;
    find $BUILDTMP_VBC_PHP5 -type f -exec chmod 644 {} \;
@@ -420,13 +478,13 @@ then
    mkdir -p $BUILDTMP_CALC_PHP5
 
    # setup basic files
-   rsync -rt --exclude=".svn" --exclude=".git" --exclude="README.txt" $CODE_SOURCE_PATH/php5/$SVNTREE/examples/calc/* $BUILDTMP_CALC_PHP5/
+   rsync -rt --exclude="README.txt" --exclude="migration" $CODE_SOURCE_PATH/examples/calc/* $BUILDTMP_CALC_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_CALC_PHP5/APF/
 
    # license file
-   cp $BUILDPATH/lgpl-3.0.txt $BUILDTMP_CALC_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_CALC_PHP5/
 
    find $BUILDTMP_CALC_PHP5 -type f -exec touch {} \;
    find $BUILDTMP_CALC_PHP5 -type f -exec chmod 644 {} \;
@@ -460,13 +518,13 @@ then
    mkdir -p $BUILDTMP_MODS_PHP5
 
    # setup basic files
-   rsync -rt --exclude=".svn" --exclude=".git" --exclude="README.txt" $CODE_SOURCE_PATH/php5/$SVNTREE/examples/dynamic-modules/* $BUILDTMP_MODS_PHP5/
+   rsync -rt --exclude="README.txt" --exclude="migration" $CODE_SOURCE_PATH/examples/dynamic-modules/* $BUILDTMP_MODS_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_MODS_PHP5/APF/
 
    # license file
-   cp $BUILDPATH/lgpl-3.0.txt $BUILDTMP_MODS_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_MODS_PHP5/
 
    find $BUILDTMP_MODS_PHP5 -type f -exec touch {} \;
    find $BUILDTMP_MODS_PHP5 -type f -exec chmod 644 {} \;
@@ -495,6 +553,11 @@ fi
 
 echo "[INFO] clean up temporary directories"
 cd $CURRENTRELEASEPATH
+
+if [ ! -z "$WORKSPACE" ] && [ -d "$WORKSPACE" ]
+then
+   rm -rf $WORKSPACE
+fi
 
 if [ ! -z "$CURRENTRELEASEPATH/$DISTRIARCH_PHP5" ] && [ -d "$CURRENTRELEASEPATH/$DISTRIARCH_PHP5" ]
 then
@@ -527,11 +590,7 @@ then
 fi
 ####################################################################################################
 
-echo
-echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-echo -n "end at  : "
-date +"%Y-%m-%d, %H:%M:%S"
-echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+displayFooter
 exit 0
 
 ####################################################################################################

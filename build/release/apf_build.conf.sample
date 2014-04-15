@@ -1,0 +1,11 @@
+# optional: use local repo clone instead of a fresh clone from GitHub for build
+#CODE_LOCAL_REPO_PATH=/path/to/local/code/clone
+#DOCS_LOCAL_REPO_PATH=/path/to/local/docs/clone
+
+# build environment
+BUILDPATH=/path/to/build/dir
+DOCS_GENERATION_PATH=/path/to/docs/generation
+DOCS_GENERATION_LOG_PATH=/path/to/docs/logs
+
+# doxygen-related
+DOXYGEN_BIN=/path/to/doxygen/bin/doxygen
