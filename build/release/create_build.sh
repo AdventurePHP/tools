@@ -67,16 +67,13 @@ then
    echo
    echo "- CODE_LOCAL_REPO_PATH (opt): The source location where the APF sources are checked out on local disk."
    echo "- DOCS_LOCAL_REPO_PATH (opt): The source location where the APF documentation page is checked out on local disk."
-   echo "- BUILDPATH                 : The path where the build is created and stored."
-   echo "- DOCS_GENERATION_PATH      : The path where the documentation is generated at."
-   echo "- DOCS_GENERATION_LOG_PATH  : The path where the documentation generation logs are stored."
-   echo "- DOXYGEN_BIN               : The doxygen binary."
+   echo "- BUILD_PATH                : The path where the build is created and stored."
    echo
    echo "In case the configuration defines \"DOCS_LOCAL_REPO_PATH\" and/or \"CODE_LOCAL_REPO_PATH\" the build script tries to use a local clone of the APF repo(s)."
    echo
    echo "The list of modules (-m) can either be \"all\" (default) or a comma-separated list of the following items (or just one):"
    echo
-   echo "- docs      : APF doxygen documentation."
+   echo "- apidocs   : APF doxygen documentation."
    echo "- codepack  : Code release files."
    echo "- configpack: Sample configuration files."
    echo "- demopack  : Sandbox release files."
@@ -106,7 +103,7 @@ then
    DEMO_ENABLED=1
    EXAMPLES_ENABLED=1
 else
-   DOCS_ENABLED=$(isModuleEnabled "docs")
+   DOCS_ENABLED=$(isModuleEnabled "apidocs")
    CODE_ENABLED=$(isModuleEnabled "codepack")
    CONF_ENABLED=$(isModuleEnabled "configpack")
    DEMO_ENABLED=$(isModuleEnabled "demopack")
@@ -124,10 +121,7 @@ fi
 # reset parameters for safety reasons
 CODE_LOCAL_REPO_PATH=
 DOCS_LOCAL_REPO_PATH=
-BUILDPATH=
-DOCS_GENERATION_PATH=
-DOCS_GENERATION_LOG_PATH=
-DOXYGEN_BIN=
+BUILD_PATH=
 
 # setup base paths
 if [ -f $CONF ]
@@ -154,34 +148,16 @@ else
    GIT_DOCS_URL=$DOCS_LOCAL_REPO_PATH
 fi
 
-if [ -z "$BUILDPATH" ] || [ ! -d "$BUILDPATH" ]
+if [ -z "$BUILD_PATH" ] || [ ! -d "$BUILD_PATH" ]
 then
-    echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"BUILDPATH\" missing or invalid ot points to a non-existing directory!"
+    echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"BUILD_PATH\" missing or invalid ot points to a non-existing directory!"
     exit 1
-fi
-
-if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOCS_GENERATION_PATH" ] || [ ! -d "$DOCS_GENERATION_PATH" ])
-then
-   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOCS_GENERATION_PATH\" missing or invalid!"
-   exit 1
-fi
-
-if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOCS_GENERATION_LOG_PATH" ] || [ ! -d "$DOCS_GENERATION_LOG_PATH" ])
-then
-   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOCS_GENERATION_LOG_PATH\" missing or invalid!"
-   exit 1
-fi
-
-if [ "$DOCS_ENABLED" == "1" ] && ([ -z "$DOXYGEN_BIN" ] || [ ! -x "$DOXYGEN_BIN" ])
-then
-   echo "[ERROR] Loading configuration file $CONF failed! Configuration directive \"DOXYGEN_BIN\" missing or invalid!"
-   exit 1
 fi
 
 ####################################################################################################
 
 echo "[INFO] Set global parameters ..."
-RELEASEPATH=$BUILDPATH/RELEASES
+RELEASEPATH=$BUILD_PATH/RELEASES
 DISTRINAME=apf
 BUILDNUMBR=$(date +"%Y-%m-%d-%H%M")
 DISTRIARCH_NOARCH=noarch
@@ -224,15 +200,10 @@ rm -rf $DOCS_SOURCE_PATH/.git
 if [ "$DOCS_ENABLED" == "1" ]
 then
    echo "[INFO] generate documentation"
-   if [ ! -z "$DOCS_GENERATION_LOG_PATH" ]
-   then
-      rm -f $DOCS_GENERATION_LOG_PATH/* >/dev/null 2>&1
-   fi
 
-   if [ ! -z "$DOCS_GENERATION_PATH" ]
-   then
-      rm -rf $DOCS_GENERATION_PATH/* >/dev/null 2>&1
-   fi
+   # create folder for docs generation
+   DOCS_GENERATION_PATH=$WORKSPACE/api-docs
+   mkdir -p $DOCS_GENERATION_PATH
 
    # generate docs injecting build configuration params
    cat "$DIR/apf_docs.conf" \
@@ -240,7 +211,7 @@ then
       | awk -v r=$CODE_SOURCE_PATH '{ gsub("{{SOURCE_FOLDER}}", r); print $0; }' \
       | awk -v r=$DOCS_GENERATION_PATH '{ gsub("{{DOCS_GENERATION_DIR}}", r); print $0; }' \
       | awk -v r=$DIR '{ gsub("{{BUILD_DIR}}", r); print $0; }' \
-      | $DOXYGEN_BIN - #> $DOCS_GENERATION_LOG_PATH/apf_docs.log 2>&1
+      | doxygen - > $DOCS_GENERATION_PATH/apf_docs.log 2>&1
 fi
 
 ####################################################################################################
@@ -253,12 +224,19 @@ then
 
    cp -rf $DOCS_GENERATION_PATH/docs/*.html $DOCS_GENERATION_PATH/docs/*.png $DOCS_GENERATION_PATH/docs/*.css $DOCS_GENERATION_PATH/docs/*.js $DOKU_HTML_PATH
 
-   # fix for STRIP_FROM_PATH does not effect example page :(
-   STRIP_FROM_PATH=$(cat "$DIR/apf_docs.conf" | grep -e "^STRIP_FROM_PATH" | cut -d "=" -f 2 | tr -d " " | sed -e "s/{{SOURCE_FOLDER}}/$DOCS_GENERATION_PATH/g" -e "s/\//\\\\\//g")
-   for file in $(grep -R "$STRIP_FROM_PATH" $DOKU_HTML_PATH | cut -d ":" -f1 | sort | uniq)
+   # fix for STRIP_FROM_PATH that does not effect example page :(
+   # $CODE_SOURCE_PATH -> /APF
+   for file in $(grep -R "$CODE_SOURCE_PATH" $DOKU_HTML_PATH | cut -d ":" -f1 | sort | uniq)
    do
-      sed -i -e "s/$STRIP_FROM_PATH/\/APF/g" $file;
+      sed -i -e "s#$CODE_SOURCE_PATH#/APF#g" $file;
    done;
+
+   # fix for file names containing the build path (e.g. _2cygdrive_2c_2_users_2_christian_2_entwicklung_2_build-_test_2_r_e_l_e_a_s_e_s_22_80_81_2workspf8abe746937a97cbc37659678b593e08.html)
+   #                                                    / cygdrive/ c/  Users/  Christian/  Entwicklung/  Build-Test /  RELEASES/2.0.1/docs/html/class_a_p_f_1_1core_1_1frontcontroller_1_1_frontcontroller.html
+   # mapping table:
+   # / -> _2
+   # [A-Z] -> _[a-z]
+   # TODO at least replace $BUILD_PATH
 
    find $DOKU_HTML_PATH -type f -exec touch {} \;
    find $DOKU_HTML_PATH -type f -exec chmod 644 {} \;
