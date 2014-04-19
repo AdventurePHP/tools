@@ -226,17 +226,37 @@ then
 
    # fix for STRIP_FROM_PATH that does not effect example page :(
    # $CODE_SOURCE_PATH -> /APF
-   for file in $(grep -R "$CODE_SOURCE_PATH" $DOKU_HTML_PATH | cut -d ":" -f1 | sort | uniq)
+   for FILE in $(grep -R "$CODE_SOURCE_PATH" $DOKU_HTML_PATH | cut -d ":" -f1 | sort | uniq)
    do
-      sed -i -e "s#$CODE_SOURCE_PATH#/APF#g" $file;
-   done;
+      sed -i -e "s#$CODE_SOURCE_PATH#/APF#g" $FILE;
+   done
 
-   # fix for file names containing the build path (e.g. _2cygdrive_2c_2_users_2_christian_2_entwicklung_2_build-_test_2_r_e_l_e_a_s_e_s_22_80_81_2workspf8abe746937a97cbc37659678b593e08.html)
-   #                                                    / cygdrive/ c/  Users/  Christian/  Entwicklung/  Build-Test /  RELEASES/2.0.1/docs/html/class_a_p_f_1_1core_1_1frontcontroller_1_1_frontcontroller.html
-   # mapping table:
-   # / -> _2
-   # [A-Z] -> _[a-z]
-   # TODO at least replace $BUILD_PATH
+   # Fix for file names containing the build path (STRIP_FROM_PATH does not apply here :(). E.g.
+   # _2cygdrive_2c_2_users_2_christian_2_entwicklung_2_build-_test_2_r_e_l_e_a_s_e_s_22_80_81_2workspf8abe746937a97cbc37659678b593e08.html)
+   #
+   # File name mapping table:
+   #
+   # +-------+--------+
+   # | Old   | New    |
+   # +-------+--------+
+   # | /     | _2     |
+   # +-------+--------+
+   # | [A-Z] | _[a-z] |
+   # +-------+--------+
+   cd $DOKU_HTML_PATH
+   REPLACED_BUILD_PATH=$(echo $BUILD_PATH | sed -e "s#/#_2#g" | sed -e "s#[A-Z]#_\L&#g")
+   for FILE in $(ls $REPLACED_BUILD_PATH*)
+   do
+      # replace file name
+      NEW_FILE_NAME=$(echo $FILE | sed -e "s#$REPLACED_BUILD_PATH##g");
+      mv $FILE $NEW_FILE_NAME;
+
+      # replace file name in html files
+      for HTML_FILE in $(grep "$FILE" * | cut -d ":" -f1 | sort | uniq)
+      do
+         sed -i -e "s#$FILE#$NEW_FILE_NAME#g" $HTML_FILE;
+      done
+   done
 
    find $DOKU_HTML_PATH -type f -exec touch {} \;
    find $DOKU_HTML_PATH -type f -exec chmod 644 {} \;
