@@ -1,6 +1,8 @@
 # optional: use local repo clone instead of a fresh clone from GitHub for build
 #CODE_LOCAL_REPO_PATH=/path/to/local/code/clone
 #DOCS_LOCAL_REPO_PATH=/path/to/local/docs/clone
+#CONFIG_LOCAL_REPO_PATH=/path/to/local/config/clone
+#EXAMPLE_LOCAL_REPO_PATH=/path/to/local/examples/clone
 
 # build environment
 BUILD_PATH=/path/to/build/dir

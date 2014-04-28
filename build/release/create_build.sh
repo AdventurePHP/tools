@@ -56,20 +56,22 @@ then
    # displax error in case of issues with the call
    if [ "$USAGE" == "0" ]
    then
-      echo "[ERROR] not enough arguments"
+      echo "[ERROR] Not enough arguments!"
    fi
 
-   echo "Usage: $(basename $0) -c <config-file> -b <git branch> -v <build-version> [-m <modules-to-build>] [-o]"
+   echo "Usage: $(basename $0) -c <config-file> -b <git branch> -v <build-version> [-m <modules-to-build>]"
    echo
    echo "Please note: <git branch> must be replaced with the name of the GIT branch and <build-version> indicates the version number in the release files."
    echo "Using the -o parameter you can create a build with the sources downloaded beforehand."
    echo "The configuration file referred to must specify the following parameters:"
    echo
-   echo "- CODE_LOCAL_REPO_PATH (opt): The source location where the APF sources are checked out on local disk."
-   echo "- DOCS_LOCAL_REPO_PATH (opt): The source location where the APF documentation page is checked out on local disk."
-   echo "- BUILD_PATH                : The path where the build is created and stored."
+   echo "- CODE_LOCAL_REPO_PATH (opt)   : The source location where the APF sources are checked out on local disk."
+   echo "- DOCS_LOCAL_REPO_PATH (opt)   : The source location where the APF documentation page is checked out on local disk."
+   echo "- CONFIG_LOCAL_REPO_PATH (opt) : The source location where the APF sample config is checked out on local disk."
+   echo "- EXAMPLE_LOCAL_REPO_PATH (opt): The source location where the APF examples are checked out on local disk."
+   echo "- BUILD_PATH                   : The path where the build is created and stored."
    echo
-   echo "In case the configuration defines \"DOCS_LOCAL_REPO_PATH\" and/or \"CODE_LOCAL_REPO_PATH\" the build script tries to use a local clone of the APF repo(s)."
+   echo "In case the configuration defines \"DOCS_LOCAL_REPO_PATH\" and/or \"CODE_LOCAL_REPO_PATH\" and/or \"CONFIG_LOCAL_REPO_PATH\" and/or \"EXAMPLE_LOCAL_REPO_PATH\" the build script tries to use a local clone of the APF repo(s)."
    echo
    echo "The list of modules (-m) can either be \"all\" (default) or a comma-separated list of the following items (or just one):"
    echo
@@ -82,7 +84,13 @@ then
    # display footer, since we end here...
    displayFooter
 
-   exit 1
+   # state correct exit code...
+   if [ "$USAGE" == "1" ]
+   then
+      exit 0
+   else
+      exit 1
+   fi
 fi
 
 # gather current directory
@@ -110,17 +118,12 @@ else
    EXAMPLES_ENABLED=$(isModuleEnabled "examples")
 fi
 
-# special parameter for generic code base
-BASE_ENABLED=0
-if [ "$CODE_ENABLED" == "1" ] || [ "$DEMO_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ]
-then
-   BASE_ENABLED=1
-fi
-
 ####################################################################################################
 # reset parameters for safety reasons
 CODE_LOCAL_REPO_PATH=
 DOCS_LOCAL_REPO_PATH=
+CONFIG_LOCAL_REPO_PATH=
+EXAMPLE_LOCAL_REPO_PATH=
 BUILD_PATH=
 
 # setup base paths
@@ -146,6 +149,20 @@ then
    GIT_DOCS_URL=https://github.com/AdventurePHP/docs.git
 else
    GIT_DOCS_URL=$DOCS_LOCAL_REPO_PATH
+fi
+
+if [ -z "$CONFIG_LOCAL_REPO_PATH" ] || [ ! -d "$CONFIG_LOCAL_REPO_PATH" ]
+then
+   GIT_CONFIG_URL=https://github.com/AdventurePHP/config.git
+else
+   GIT_CONFIG_URL=$CONFIG_LOCAL_REPO_PATH
+fi
+
+if [ -z "$EXAMPLE_LOCAL_REPO_PATH" ] || [ ! -d "$EXAMPLE_LOCAL_REPO_PATH" ]
+then
+   GIT_EXAMPLES_URL=https://github.com/AdventurePHP/examples.git
+else
+   GIT_EXAMPLES_URL=$EXAMPLE_LOCAL_REPO_PATH
 fi
 
 if [ -z "$BUILD_PATH" ] || [ ! -d "$BUILD_PATH" ]
@@ -181,19 +198,69 @@ echo "[INFO] Exporting code branch $GIT_BRANCH to workspace ..."
 WORKSPACE=$CURRENTRELEASEPATH/workspace
 CODE_SOURCE_PATH=$WORKSPACE/code
 DOCS_SOURCE_PATH=$WORKSPACE/docs
+CONFIG_SOURCE_PATH=$WORKSPACE/config
+EXAMPLES_SOURCE_PATH=$WORKSPACE/examples
 
 mkdir -p $CODE_SOURCE_PATH
 mkdir -p $DOCS_SOURCE_PATH
+mkdir -p $CONFIG_SOURCE_PATH
+mkdir -p $EXAMPLES_SOURCE_PATH
 
 # clone code to local disk
-cd $CODE_SOURCE_PATH
-git clone --depth 1 --branch $GIT_BRANCH $GIT_CODE_URL . >/dev/null 2>&1
-rm -rf $CODE_SOURCE_PATH/.git
+if [ "$CODE_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ] || [ "$DOCS_ENABLED" == "1" ] || [ "$DEMO_ENABLED" == "1" ]
+then
+   cd $CODE_SOURCE_PATH
+   git clone --depth 1 --branch $GIT_BRANCH $GIT_CODE_URL . >/dev/null 2>&1
+   if [ $? -ne 0 ]
+   then
+      echo "[ERROR] Checkout of branch $GIT_BRANCH of $GIT_CODE_URL into local workspace failed!"
+      displayFooter
+      exit 1
+   fi
+   rm -rf $CODE_SOURCE_PATH/.git
+fi
 
 # clone docs to local disk
-cd $DOCS_SOURCE_PATH
-git clone --depth 1 --branch master $GIT_DOCS_URL . >/dev/null 2>&1
-rm -rf $DOCS_SOURCE_PATH/.git
+if [ "$DEMO_ENABLED" == "1" ]
+then
+   cd $DOCS_SOURCE_PATH
+   git clone --depth 1 --branch master $GIT_DOCS_URL . >/dev/null 2>&1
+   if [ $? -ne 0 ]
+   then
+      echo "[ERROR] Checkout of branch master of $GIT_DOCS_URL into local workspace failed!"
+      displayFooter
+      exit 1
+   fi
+   rm -rf $DOCS_SOURCE_PATH/.git
+fi
+
+# clone config to local disk
+if [ "$CONF_ENABLED" == "1" ]
+then
+   cd $CONFIG_SOURCE_PATH
+   git clone --depth 1 --branch $GIT_BRANCH $GIT_CONFIG_URL . >/dev/null 2>&1
+   if [ $? -ne 0 ]
+   then
+      echo "[ERROR] Checkout of $GIT_BRANCH of $GIT_CONFIG_URL into local workspace failed!"
+      displayFooter
+      exit 1
+   fi
+   rm -rf $CONFIG_SOURCE_PATH/.git
+fi
+
+# clone examples to local disk
+if [ "$DEMO_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ]
+then
+   cd $EXAMPLES_SOURCE_PATH
+   git clone --depth 1 --branch $GIT_BRANCH $GIT_EXAMPLES_URL . >/dev/null 2>&1
+   if [ $? -ne 0 ]
+   then
+      echo "[ERROR] Checkout of $GIT_BRANCH of $GIT_EXAMPLES_URL into local workspace failed!"
+      displayFooter
+      exit 1
+   fi
+   rm -rf $EXAMPLES_SOURCE_PATH/.git
+fi
 
 ####################################################################################################
 
@@ -285,13 +352,13 @@ fi
 
 ####################################################################################################
 
-if [ "$BASE_ENABLED" == "1" ]
+if [ "$CODE_ENABLED" == "1" ] || [ "$DEMO_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ]
 then
     echo "[INFO] build code bases for $DISTRIARCH_PHP5 release"
     mkdir -p $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF
 
     # code files
-    rsync -rt --exclude="/config" --exclude="examples" --exclude="tests" $CODE_SOURCE_PATH/* $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/
+    rsync -rt --exclude="tests" $CODE_SOURCE_PATH/* $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/
 
     # license file
     cp $DIR/lgpl-3.0.txt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
@@ -305,10 +372,7 @@ fi
 
 ####################################################################################################
 
-if [ "$BASE_ENABLED" == "1" ]
-then
-   mkdir -p $CURRENTRELEASEPATH/download
-fi
+mkdir -p $CURRENTRELEASEPATH/download
 
 ####################################################################################################
 
@@ -334,7 +398,7 @@ then
    BUILDTMP_CONGIGPACK_PHP5=$CURRENTRELEASEPATH/configpack_noarch
    mkdir -p $BUILDTMP_CONGIGPACK_PHP5
 
-   rsync -rt $CODE_SOURCE_PATH/config/* $BUILDTMP_CONGIGPACK_PHP5/config
+   rsync -rt $CONFIG_SOURCE_PATH/* $BUILDTMP_CONGIGPACK_PHP5
 
    # license file
    cp $DIR/lgpl-3.0.txt $BUILDTMP_CONGIGPACK_PHP5/
@@ -366,7 +430,7 @@ then
    mkdir -p $BUILDTMP_DEMOPACK_PHP5
 
    # setup basic files
-   rsync -rt $CODE_SOURCE_PATH/examples/sandbox/* $BUILDTMP_DEMOPACK_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/sandbox/* $BUILDTMP_DEMOPACK_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_DEMOPACK_PHP5/APF/
@@ -436,7 +500,7 @@ then
    mkdir -p $BUILDTMP_VBC_PHP5
 
    # setup basic files
-   rsync -rt --exclude="README.txt" --exclude="migration" $CODE_SOURCE_PATH/examples/viewbasedcaching/* $BUILDTMP_VBC_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/viewbasedcaching/* $BUILDTMP_VBC_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_VBC_PHP5/APF/
@@ -476,7 +540,7 @@ then
    mkdir -p $BUILDTMP_CALC_PHP5
 
    # setup basic files
-   rsync -rt --exclude="README.txt" --exclude="migration" $CODE_SOURCE_PATH/examples/calc/* $BUILDTMP_CALC_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/calc/* $BUILDTMP_CALC_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_CALC_PHP5/APF/
@@ -516,7 +580,7 @@ then
    mkdir -p $BUILDTMP_MODS_PHP5
 
    # setup basic files
-   rsync -rt --exclude="README.txt" --exclude="migration" $CODE_SOURCE_PATH/examples/dynamic-modules/* $BUILDTMP_MODS_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/dynamic-modules/* $BUILDTMP_MODS_PHP5/
 
    # add framework code
    rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_MODS_PHP5/APF/

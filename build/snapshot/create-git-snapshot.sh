@@ -13,8 +13,6 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 # define version related parameters
-GIT_URL=https://github.com/AdventurePHP/code.git
-
 GIT_BRANCH=$1
 REL_VERSION=$2
 
@@ -28,16 +26,22 @@ cd $WORKSPACE
 # clear workspace before export
 rm -rf *
 
-# export from git
-git clone --depth 1 --branch $GIT_BRANCH $GIT_URL .
+# export code from git
+git clone --depth 1 --branch $GIT_BRANCH https://github.com/AdventurePHP/code.git .
 rm -rf .git
+
+# export config from git
+mkdir config && cd config
+git clone --depth 1 --branch $GIT_BRANCH https://github.com/AdventurePHP/config.git .
+rm -rf .git
+
+cd ..
 
 # create snapshot file
 SNAPSHOT_FILE=apf-$REL_VERSION-snapshot-php5.tar.gz
 tar -czf ../$SNAPSHOT_FILE * 
 
 # more snapshot to release dir
-TARGET_FILE=$REL_DIR/
 if [ -f $REL_DIR/$SNAPSHOT_FILE ]; then
    rm -f $REL_DIR/$SNAPSHOT_FILE
 fi
