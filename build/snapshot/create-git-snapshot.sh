@@ -13,10 +13,21 @@ date +"%Y-%m-%d, %H:%M:%S"
 echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
 echo
 
+####################################################################################################
+# footer function
+function displayFooter() {
+   echo
+   echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+   echo -n "end at  : "
+   date +"%Y-%m-%d, %H:%M:%S"
+   echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+}
+####################################################################################################
+
 if [ -z "$1" ] || [ -z "$2" ]; then 
    echo "Not enough parameters. Aborting!"
    echo "Usage: $0 <git-branch> <release-version>"
-   echo
+   displayFooter
    exit 1
 fi
 
@@ -65,8 +76,5 @@ fi
 echo "[INFO] Publishing snapshot file $SNAPSHOT_FILE for version $REL_VERSION from branch $GIT_BRANCH ..."
 mv ../$SNAPSHOT_FILE $REL_DIR
 
-echo
-echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
-echo -n "end at  : "
-date +"%Y-%m-%d, %H:%M:%S"
-echo ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+displayFooter
+exit 0
