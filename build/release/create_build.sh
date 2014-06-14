@@ -447,7 +447,9 @@ then
    cp $DOCS_SOURCE_PATH/media/img/icons/ok-box.png $BUILDTMP_DEMOPACK_PHP5/images/
    cp $DOCS_SOURCE_PATH/media/img/icons/warning-box.png $BUILDTMP_DEMOPACK_PHP5/images/
    cp $DOCS_SOURCE_PATH/media/content/pagecontroller_timing_model.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/content/frontcontroller_timing_model.png $BUILDTMP_DEMOPACK_PHP5/images/
+   cp $DOCS_SOURCE_PATH/media/content/frontcontroller_timing_model_2.X.png $BUILDTMP_DEMOPACK_PHP5/images/
+   cp $DOCS_SOURCE_PATH/media/content/filter_timing_model.png $BUILDTMP_DEMOPACK_PHP5/images/
+   cp $DOCS_SOURCE_PATH/media/content/logger_concept_1_17.png $BUILDTMP_DEMOPACK_PHP5/images/
 
    # add selection of content
    mkdir -p $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content
