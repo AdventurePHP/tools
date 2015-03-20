@@ -453,22 +453,24 @@ then
 
    # add selection of content
    mkdir -p $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_154_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_013_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_014_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_098_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_012_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_047_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_006_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_134_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_067_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_004_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_137_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_023_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_030_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_107_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_144_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_145_2.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_154_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_013_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_014_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_098_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_012_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_047_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_006_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_134_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_067_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_004_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_137_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_023_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_030_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_107_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_144_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_145_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_161_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_162_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/APF/sandbox/pres/content/
 
    find $BUILDTMP_DEMOPACK_PHP5 -type f -exec touch {} \;
    find $BUILDTMP_DEMOPACK_PHP5 -type f -exec chmod 644 {} \;
