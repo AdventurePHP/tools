@@ -206,7 +206,7 @@ mkdir -p $DOCS_SOURCE_PATH
 mkdir -p $CONFIG_SOURCE_PATH
 mkdir -p $EXAMPLES_SOURCE_PATH
 
-# clone code to local disk
+# clone code to local disk (avoids to include unfinished changes in working copy)
 if [ "$CODE_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ] || [ "$DOCS_ENABLED" == "1" ] || [ "$DEMO_ENABLED" == "1" ]
 then
    cd $CODE_SOURCE_PATH
@@ -220,7 +220,7 @@ then
    rm -rf $CODE_SOURCE_PATH/.git
 fi
 
-# clone docs to local disk
+# clone docs to local disk (avoids to include unfinished changes in working copy)
 if [ "$DEMO_ENABLED" == "1" ]
 then
    cd $DOCS_SOURCE_PATH
@@ -234,7 +234,7 @@ then
    rm -rf $DOCS_SOURCE_PATH/.git
 fi
 
-# clone config to local disk
+# clone config to local disk (avoids to include unfinished changes in working copy)
 if [ "$CONF_ENABLED" == "1" ]
 then
    cd $CONFIG_SOURCE_PATH
@@ -248,7 +248,7 @@ then
    rm -rf $CONFIG_SOURCE_PATH/.git
 fi
 
-# clone examples to local disk
+# clone examples to local disk (avoids to include unfinished changes in working copy)
 if [ "$DEMO_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ]
 then
    cd $EXAMPLES_SOURCE_PATH
