@@ -4,8 +4,8 @@ Version: 2.1
 Release: 1%{?dist}
 License: LGPLv3
 Group: Applications/System
-URL: http://www.adventure-php-framework.org
-Source: http://files.adventure-php-framework.org/2.1/download/apf-demopack-2.1.1-2014-09-06-1448-php5.tar.gz
+URL: https://adventure-php-framework.org
+Source: https://adventure-php-framework.org/files/2.1/download/apf-demopack-2.1.1-2014-09-06-1448-php5.tar.gz
 Source1: adventure-php-framework.conf
 BuildArch: noarch
 
