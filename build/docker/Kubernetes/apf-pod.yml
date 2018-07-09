@@ -1,0 +1,15 @@
+apiVersion: "v1"
+kind: Pod
+metadata:
+  name: apf
+  labels:
+    name: apf
+    app: apf
+spec:
+  containers:
+    - name: apf
+      image: rottmrei/apf
+      ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
