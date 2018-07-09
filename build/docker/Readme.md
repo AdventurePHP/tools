@@ -85,37 +85,32 @@ kubectl create -f .
 This creates the following network cofiguration:
 
 ~~~
-                 ┌─────────────┐
-                 │  internet   │
-                 └─────────────┘
-                        │
-                        ▼
-                 ┌─────────────┐
-                 │ingress-nginx│
-                 └─────────────┘
-                        │
-                        ▼
-                 ┌─────────────┐
-                 │   apf-ing   │
-                 └─────────────┘
-                        │
-                        ▼
-                 ┌─────────────┐
-                 │   apf-svc   │
-                 └─────────────┘
-                        │
-                        ▼
-                 ┌─────────────┐
-       ┌─────────│   apf-rc    │─────────┐
-       │         └─────────────┘         │
-       │                │                │
-       ▼                ▼                ▼
-┌─────────────┐  ┌─────────────┐  ┌─────────────┐
-│   apf-pod   │  │   apf-pod   │  │   apf-pod   │
-└─────────────┘  └─────────────┘  └─────────────┘
+┌─────────────┐
+│  internet   │
+└─────────────┘
+       │
+       ▼
+┌─────────────┐
+│ingress-nginx│
+└─────────────┘
+       │
+       ▼
+┌─────────────┐
+│   apf-ing   │      ┌─────────────────┐
+└─────────────┘      │ ┌─────────────┐ │
+       │          ┌──┼▶│   apf-pod   │ │
+       ▼          │  │ └─────────────┘ │
+┌─────────────┐   │  │ ┌─────────────┐ │
+│   apf-svc   ├───┼──┼▶│   apf-pod   │ │
+└─────────────┘   │  │ └─────────────┘ │
+                  │  │ ┌─────────────┐ │
+                  └──┼▶│   apf-pod   │ │
+                     │ └─────────────┘ │
+                     │     apf-rc      │
+                     └─────────────────┘
 ~~~
 
-The ingress-nginx controller routes traffic to port 80 of any nodes external ip address according to the ingress configuration.
-The apf-ing ingress configuration maps inbound http requests to /apf to the apf-svc service similar to a reverse proxy. 
-The apf-svc service uses round-robin to distribute requests to the 3 apf-pods that are kept healthy by the replication controller apf-rc.
+* The ingress-nginx controller routes traffic to port 80 of any nodes external ip address according to the ingress configuration.
+* The apf-ing ingress configuration maps inbound http requests to /apf to the apf-svc service similar to a reverse proxy. 
+* The apf-svc service uses round-robin to distribute requests to the 3 apf-pods that are kept healthy by the replication controller apf-rc.
 
