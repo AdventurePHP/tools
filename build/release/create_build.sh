@@ -1,7 +1,7 @@
 #!/bin/bash
 ####################################################################################################
 #
-# Build script for the APF release files (PHP5).
+# Build script for the APF release files (PHP7).
 #
 # @author Christian Achatz
 # @version
@@ -366,8 +366,6 @@ then
     find $CURRENTRELEASEPATH/$DISTRIARCH_PHP -type f -exec touch {} \;
     find $CURRENTRELEASEPATH/$DISTRIARCH_PHP -type f -exec chmod 644 {} \;
     find $CURRENTRELEASEPATH/$DISTRIARCH_PHP -type d -exec chmod 755 {} \;
-    #chown -R $USER_NOBODY $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
-    #chgrp -R $GROUP_NOBODY $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
 fi
 
 ####################################################################################################
@@ -379,14 +377,14 @@ mkdir -p $CURRENTRELEASEPATH/download
 if [ "$CODE_ENABLED" == "1" ]
 then
    echo "[INFO] create codepack release for $DISTRIARCH_PHP"
-   CODEPACKZIPFILENAME_PHP5=$DISTRINAME-codepack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
+   CODEPACKZIPFILENAME_PHP=$DISTRINAME-codepack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
    cd $CURRENTRELEASEPATH/$DISTRIARCH_PHP
-   zip -r $CODEPACKZIPFILENAME_PHP5.zip . >/dev/null 2>&1
-   mv $CODEPACKZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
-   tar -czf $CODEPACKZIPFILENAME_PHP5.tar.gz * >/dev/null 2>&1
-   mv $CODEPACKZIPFILENAME_PHP5.tar.gz $CURRENTRELEASEPATH/download/
-   tar -cjf $CODEPACKZIPFILENAME_PHP5.tar.bz2 * >/dev/null 2>&1
-   mv $CODEPACKZIPFILENAME_PHP5.tar.bz2 $CURRENTRELEASEPATH/download/
+   zip -r $CODEPACKZIPFILENAME_PHP.zip . >/dev/null 2>&1
+   mv $CODEPACKZIPFILENAME_PHP.zip $CURRENTRELEASEPATH/download/
+   tar -czf $CODEPACKZIPFILENAME_PHP.tar.gz * >/dev/null 2>&1
+   mv $CODEPACKZIPFILENAME_PHP.tar.gz $CURRENTRELEASEPATH/download/
+   tar -cjf $CODEPACKZIPFILENAME_PHP.tar.bz2 * >/dev/null 2>&1
+   mv $CODEPACKZIPFILENAME_PHP.tar.bz2 $CURRENTRELEASEPATH/download/
    cd - >/dev/null 2>&1
 fi
 
@@ -395,22 +393,20 @@ fi
 if [ "$CONF_ENABLED" == "1" ]
 then
    echo "[INFO] create configpack release"
-   BUILDTMP_CONGIGPACK_PHP5=$CURRENTRELEASEPATH/configpack_noarch
-   mkdir -p $BUILDTMP_CONGIGPACK_PHP5
+   BUILDTMP_CONGIGPACK_PHP=$CURRENTRELEASEPATH/configpack_noarch
+   mkdir -p $BUILDTMP_CONGIGPACK_PHP
 
-   rsync -rt $CONFIG_SOURCE_PATH/* $BUILDTMP_CONGIGPACK_PHP5
+   rsync -rt $CONFIG_SOURCE_PATH/* $BUILDTMP_CONGIGPACK_PHP
 
    # license file
-   cp $DIR/lgpl-3.0.txt $BUILDTMP_CONGIGPACK_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_CONGIGPACK_PHP/
 
-   find $BUILDTMP_CONGIGPACK_PHP5 -type f -exec touch {} \;
-   find $BUILDTMP_CONGIGPACK_PHP5 -type f -exec chmod 644 {} \;
-   find $BUILDTMP_CONGIGPACK_PHP5 -type d -exec chmod 755 {} \;
-   #chown -R $USER_NOBODY $BUILDTMP_CONGIGPACK_PHP5
-   #chgrp -R $GROUP_NOBODY $BUILDTMP_CONGIGPACK_PHP5
+   find $BUILDTMP_CONGIGPACK_PHP -type f -exec touch {} \;
+   find $BUILDTMP_CONGIGPACK_PHP -type f -exec chmod 644 {} \;
+   find $BUILDTMP_CONGIGPACK_PHP -type d -exec chmod 755 {} \;
 
    CONFIGPACKZIPFILENAME=$DISTRINAME-configpack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_NOARCH
-   cd $BUILDTMP_CONGIGPACK_PHP5
+   cd $BUILDTMP_CONGIGPACK_PHP
 
    zip -r $CONFIGPACKZIPFILENAME.zip . >/dev/null 2>&1
    mv $CONFIGPACKZIPFILENAME.zip $CURRENTRELEASEPATH/download/
@@ -426,57 +422,55 @@ fi
 if [ "$DEMO_ENABLED" == "1" ]
 then
    echo "[INFO] generate demopack basis for $DISTRIARCH_PHP"
-   BUILDTMP_DEMOPACK_PHP5=$CURRENTRELEASEPATH/demopack_$DISTRIARCH_PHP
-   mkdir -p $BUILDTMP_DEMOPACK_PHP5
+   BUILDTMP_DEMOPACK_PHP=$CURRENTRELEASEPATH/demopack_$DISTRIARCH_PHP
+   mkdir -p $BUILDTMP_DEMOPACK_PHP
 
    # setup basic files
-   rsync -rt $EXAMPLES_SOURCE_PATH/sandbox/* $BUILDTMP_DEMOPACK_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/sandbox/* $BUILDTMP_DEMOPACK_PHP/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_DEMOPACK_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_DEMOPACK_PHP/APF/
 
    # license file
-   cp $DIR/lgpl-3.0.txt $BUILDTMP_DEMOPACK_PHP5/
-   cp $DIR/MIT-LICENSE.txt $BUILDTMP_DEMOPACK_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_DEMOPACK_PHP/
+   cp $DIR/MIT-LICENSE.txt $BUILDTMP_DEMOPACK_PHP/
 
    # add images from the "normal" documentation page
-   mkdir -p $BUILDTMP_DEMOPACK_PHP5/images
-   cp $DOCS_SOURCE_PATH/media/img/apf-logo.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/img/icons/err-box.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/img/icons/hint-box.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/img/icons/ok-box.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/img/icons/warning-box.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/content/pagecontroller_timing_model.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/content/frontcontroller_timing_model_2.X.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/content/filter_timing_model.png $BUILDTMP_DEMOPACK_PHP5/images/
-   cp $DOCS_SOURCE_PATH/media/content/logger_concept_1_17.png $BUILDTMP_DEMOPACK_PHP5/images/
+   mkdir -p $BUILDTMP_DEMOPACK_PHP/images
+   cp $DOCS_SOURCE_PATH/media/img/apf-logo.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/img/icons/err-box.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/img/icons/hint-box.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/img/icons/ok-box.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/img/icons/warning-box.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/content/pagecontroller_timing_model.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/content/frontcontroller_timing_model_2.X.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/content/filter_timing_model.png $BUILDTMP_DEMOPACK_PHP/images/
+   cp $DOCS_SOURCE_PATH/media/content/logger_concept_1_17.png $BUILDTMP_DEMOPACK_PHP/images/
 
    # add selection of content
-   mkdir -p $BUILDTMP_DEMOPACK_PHP5/SB/pres/content
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_154_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_013_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_014_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_098_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_012_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_047_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_006_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_134_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_067_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_004_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_137_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_023_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_030_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_107_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_144_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_145_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_161_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_162_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   mkdir -p $BUILDTMP_DEMOPACK_PHP/SB/pres/content
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_154_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_013_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_014_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_098_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_012_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_047_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_006_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_134_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_067_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_004_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_137_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_023_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_030_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_107_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_144_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_145_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_161_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_162_4.X_*.html $BUILDTMP_DEMOPACK_PHP/SB/pres/content/
 
-   find $BUILDTMP_DEMOPACK_PHP5 -type f -exec touch {} \;
-   find $BUILDTMP_DEMOPACK_PHP5 -type f -exec chmod 644 {} \;
-   find $BUILDTMP_DEMOPACK_PHP5 -type d -exec chmod 755 {} \;
-   #chown -R $USER_NOBODY $BUILDTMP_DEMOPACK_PHP5
-   #chgrp -R $GROUP_NOBODY $BUILDTMP_DEMOPACK_PHP5
+   find $BUILDTMP_DEMOPACK_PHP -type f -exec touch {} \;
+   find $BUILDTMP_DEMOPACK_PHP -type f -exec chmod 644 {} \;
+   find $BUILDTMP_DEMOPACK_PHP -type d -exec chmod 755 {} \;
 fi
 
 ####################################################################################################
@@ -484,14 +478,14 @@ fi
 if [ "$DEMO_ENABLED" == "1" ]
 then
    echo "[INFO] create demopack release packages for $DISTRIARCH_PHP"
-   DEMOPACKZIPFILENAME_PHP5=$DISTRINAME-demopack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
-   cd $BUILDTMP_DEMOPACK_PHP5
-   zip -r $DEMOPACKZIPFILENAME_PHP5.zip . >/dev/null 2>&1
-   mv $DEMOPACKZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
-   tar -czf $DEMOPACKZIPFILENAME_PHP5.tar.gz * >/dev/null 2>&1
-   mv $DEMOPACKZIPFILENAME_PHP5.tar.gz $CURRENTRELEASEPATH/download/
-   tar -cjf $DEMOPACKZIPFILENAME_PHP5.tar.bz2 * >/dev/null 2>&1
-   mv $DEMOPACKZIPFILENAME_PHP5.tar.bz2 $CURRENTRELEASEPATH/download/
+   DEMOPACKZIPFILENAME_PHP=$DISTRINAME-demopack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
+   cd $BUILDTMP_DEMOPACK_PHP
+   zip -r $DEMOPACKZIPFILENAME_PHP.zip . >/dev/null 2>&1
+   mv $DEMOPACKZIPFILENAME_PHP.zip $CURRENTRELEASEPATH/download/
+   tar -czf $DEMOPACKZIPFILENAME_PHP.tar.gz * >/dev/null 2>&1
+   mv $DEMOPACKZIPFILENAME_PHP.tar.gz $CURRENTRELEASEPATH/download/
+   tar -cjf $DEMOPACKZIPFILENAME_PHP.tar.bz2 * >/dev/null 2>&1
+   mv $DEMOPACKZIPFILENAME_PHP.tar.bz2 $CURRENTRELEASEPATH/download/
    cd - >/dev/null 2>&1
 fi
 
@@ -500,23 +494,21 @@ fi
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
    echo "[INFO] generate vbc example basis for $DISTRIARCH_PHP"
-   BUILDTMP_VBC_PHP5=$CURRENTRELEASEPATH/vbc_$DISTRIARCH_PHP
-   mkdir -p $BUILDTMP_VBC_PHP5
+   BUILDTMP_VBC_PHP=$CURRENTRELEASEPATH/vbc_$DISTRIARCH_PHP
+   mkdir -p $BUILDTMP_VBC_PHP
 
    # setup basic files
-   rsync -rt $EXAMPLES_SOURCE_PATH/viewbasedcaching/* $BUILDTMP_VBC_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/viewbasedcaching/* $BUILDTMP_VBC_PHP/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_VBC_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_VBC_PHP/APF/
 
    # license file
-   cp $DIR/lgpl-3.0.txt $BUILDTMP_VBC_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_VBC_PHP/
 
-   find $BUILDTMP_VBC_PHP5 -type f -exec touch {} \;
-   find $BUILDTMP_VBC_PHP5 -type f -exec chmod 644 {} \;
-   find $BUILDTMP_VBC_PHP5 -type d -exec chmod 755 {} \;
-   #chown -R $USER_NOBODY $BUILDTMP_VBC_PHP5
-   #chgrp -R $GROUP_NOBODY $BUILDTMP_VBC_PHP5
+   find $BUILDTMP_VBC_PHP -type f -exec touch {} \;
+   find $BUILDTMP_VBC_PHP -type f -exec chmod 644 {} \;
+   find $BUILDTMP_VBC_PHP -type d -exec chmod 755 {} \;
 fi
 
 ####################################################################################################
@@ -524,14 +516,14 @@ fi
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
    echo "[INFO] create vbc example release packages for $DISTRIARCH_PHP"
-   VBCZIPFILENAME_PHP5=$DISTRINAME-vbc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
-   cd $BUILDTMP_VBC_PHP5
-   zip -r $VBCZIPFILENAME_PHP5.zip . >/dev/null 2>&1
-   mv $VBCZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
-   tar -czf $VBCZIPFILENAME_PHP5.tar.gz * >/dev/null 2>&1
-   mv $VBCZIPFILENAME_PHP5.tar.gz $CURRENTRELEASEPATH/download/
-   tar -cjf $VBCZIPFILENAME_PHP5.tar.bz2 * >/dev/null 2>&1
-   mv $VBCZIPFILENAME_PHP5.tar.bz2 $CURRENTRELEASEPATH/download/
+   VBCZIPFILENAME_PHP=$DISTRINAME-vbc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
+   cd $BUILDTMP_VBC_PHP
+   zip -r $VBCZIPFILENAME_PHP.zip . >/dev/null 2>&1
+   mv $VBCZIPFILENAME_PHP.zip $CURRENTRELEASEPATH/download/
+   tar -czf $VBCZIPFILENAME_PHP.tar.gz * >/dev/null 2>&1
+   mv $VBCZIPFILENAME_PHP.tar.gz $CURRENTRELEASEPATH/download/
+   tar -cjf $VBCZIPFILENAME_PHP.tar.bz2 * >/dev/null 2>&1
+   mv $VBCZIPFILENAME_PHP.tar.bz2 $CURRENTRELEASEPATH/download/
    cd - >/dev/null 2>&1
 fi
 
@@ -540,23 +532,21 @@ fi
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
    echo "[INFO] generate calc example basis for $DISTRIARCH_PHP"
-   BUILDTMP_CALC_PHP5=$CURRENTRELEASEPATH/calc_$DISTRIARCH_PHP
-   mkdir -p $BUILDTMP_CALC_PHP5
+   BUILDTMP_CALC_PHP=$CURRENTRELEASEPATH/calc_$DISTRIARCH_PHP
+   mkdir -p $BUILDTMP_CALC_PHP
 
    # setup basic files
-   rsync -rt $EXAMPLES_SOURCE_PATH/calc/* $BUILDTMP_CALC_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/calc/* $BUILDTMP_CALC_PHP/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_CALC_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_CALC_PHP/APF/
 
    # license file
-   cp $DIR/lgpl-3.0.txt $BUILDTMP_CALC_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_CALC_PHP/
 
-   find $BUILDTMP_CALC_PHP5 -type f -exec touch {} \;
-   find $BUILDTMP_CALC_PHP5 -type f -exec chmod 644 {} \;
-   find $BUILDTMP_CALC_PHP5 -type d -exec chmod 755 {} \;
-   #chown -R $USER_NOBODY $BUILDTMP_CALC_PHP5
-   #chgrp -R $GROUP_NOBODY $BUILDTMP_CALC_PHP5
+   find $BUILDTMP_CALC_PHP -type f -exec touch {} \;
+   find $BUILDTMP_CALC_PHP -type f -exec chmod 644 {} \;
+   find $BUILDTMP_CALC_PHP -type d -exec chmod 755 {} \;
 fi
 
 ####################################################################################################
@@ -564,14 +554,14 @@ fi
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
    echo "[INFO] create calc example release packages for $DISTRIARCH_PHP"
-   CALCZIPFILENAME_PHP5=$DISTRINAME-calc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
-   cd $BUILDTMP_CALC_PHP5
-   zip -r $CALCZIPFILENAME_PHP5.zip . >/dev/null 2>&1
-   mv $CALCZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
-   tar -czf $CALCZIPFILENAME_PHP5.tar.gz * >/dev/null 2>&1
-   mv $CALCZIPFILENAME_PHP5.tar.gz $CURRENTRELEASEPATH/download/
-   tar -cjf $CALCZIPFILENAME_PHP5.tar.bz2 * >/dev/null 2>&1
-   mv $CALCZIPFILENAME_PHP5.tar.bz2 $CURRENTRELEASEPATH/download/
+   CALCZIPFILENAME_PHP=$DISTRINAME-calc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
+   cd $BUILDTMP_CALC_PHP
+   zip -r $CALCZIPFILENAME_PHP.zip . >/dev/null 2>&1
+   mv $CALCZIPFILENAME_PHP.zip $CURRENTRELEASEPATH/download/
+   tar -czf $CALCZIPFILENAME_PHP.tar.gz * >/dev/null 2>&1
+   mv $CALCZIPFILENAME_PHP.tar.gz $CURRENTRELEASEPATH/download/
+   tar -cjf $CALCZIPFILENAME_PHP.tar.bz2 * >/dev/null 2>&1
+   mv $CALCZIPFILENAME_PHP.tar.bz2 $CURRENTRELEASEPATH/download/
    cd - >/dev/null 2>&1
 fi
 
@@ -580,23 +570,21 @@ fi
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
    echo "[INFO] generate modules example basis for $DISTRIARCH_PHP"
-   BUILDTMP_MODS_PHP5=$CURRENTRELEASEPATH/mods_$DISTRIARCH_PHP
-   mkdir -p $BUILDTMP_MODS_PHP5
+   BUILDTMP_MODS_PHP=$CURRENTRELEASEPATH/mods_$DISTRIARCH_PHP
+   mkdir -p $BUILDTMP_MODS_PHP
 
    # setup basic files
-   rsync -rt $EXAMPLES_SOURCE_PATH/dynamic-modules/* $BUILDTMP_MODS_PHP5/
+   rsync -rt $EXAMPLES_SOURCE_PATH/dynamic-modules/* $BUILDTMP_MODS_PHP/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_MODS_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_MODS_PHP/APF/
 
    # license file
-   cp $DIR/lgpl-3.0.txt $BUILDTMP_MODS_PHP5/
+   cp $DIR/lgpl-3.0.txt $BUILDTMP_MODS_PHP/
 
-   find $BUILDTMP_MODS_PHP5 -type f -exec touch {} \;
-   find $BUILDTMP_MODS_PHP5 -type f -exec chmod 644 {} \;
-   find $BUILDTMP_MODS_PHP5 -type d -exec chmod 755 {} \;
-   #chown -R $USER_NOBODY $BUILDTMP_MODS_PHP5
-   #chgrp -R $GROUP_NOBODY $BUILDTMP_MODS_PHP5
+   find $BUILDTMP_MODS_PHP -type f -exec touch {} \;
+   find $BUILDTMP_MODS_PHP -type f -exec chmod 644 {} \;
+   find $BUILDTMP_MODS_PHP -type d -exec chmod 755 {} \;
 fi
 
 ####################################################################################################
@@ -604,14 +592,14 @@ fi
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
    echo "[INFO] create modules example release packages for $DISTRIARCH_PHP"
-   MODSZIPFILENAME_PHP5=$DISTRINAME-modules-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
-   cd $BUILDTMP_MODS_PHP5
-   zip -r $MODSZIPFILENAME_PHP5.zip . >/dev/null 2>&1
-   mv $MODSZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
-   tar -czf $MODSZIPFILENAME_PHP5.tar.gz * >/dev/null 2>&1
-   mv $MODSZIPFILENAME_PHP5.tar.gz $CURRENTRELEASEPATH/download/
-   tar -cjf $MODSZIPFILENAME_PHP5.tar.bz2 * >/dev/null 2>&1
-   mv $MODSZIPFILENAME_PHP5.tar.bz2 $CURRENTRELEASEPATH/download/
+   MODSZIPFILENAME_PHP=$DISTRINAME-modules-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
+   cd $BUILDTMP_MODS_PHP
+   zip -r $MODSZIPFILENAME_PHP.zip . >/dev/null 2>&1
+   mv $MODSZIPFILENAME_PHP.zip $CURRENTRELEASEPATH/download/
+   tar -czf $MODSZIPFILENAME_PHP.tar.gz * >/dev/null 2>&1
+   mv $MODSZIPFILENAME_PHP.tar.gz $CURRENTRELEASEPATH/download/
+   tar -cjf $MODSZIPFILENAME_PHP.tar.bz2 * >/dev/null 2>&1
+   mv $MODSZIPFILENAME_PHP.tar.bz2 $CURRENTRELEASEPATH/download/
    cd - >/dev/null 2>&1
 fi
 
@@ -630,29 +618,29 @@ then
    rm -rf $CURRENTRELEASEPATH/$DISTRIARCH_PHP
 fi
 
-if [ ! -z "$BUILDTMP_DEMOPACK_PHP5" ] && [ -d "$BUILDTMP_DEMOPACK_PHP5" ]
+if [ ! -z "$BUILDTMP_DEMOPACK_PHP" ] && [ -d "$BUILDTMP_DEMOPACK_PHP" ]
 then
-   rm -rf $BUILDTMP_DEMOPACK_PHP5
+   rm -rf $BUILDTMP_DEMOPACK_PHP
 fi
 
-if [ ! -z "$BUILDTMP_CONGIGPACK_PHP5" ] && [ -d "$BUILDTMP_CONGIGPACK_PHP5" ]
+if [ ! -z "$BUILDTMP_CONGIGPACK_PHP" ] && [ -d "$BUILDTMP_CONGIGPACK_PHP" ]
 then
-   rm -rf $BUILDTMP_CONGIGPACK_PHP5
+   rm -rf $BUILDTMP_CONGIGPACK_PHP
 fi
 
-if [ ! -z "$BUILDTMP_VBC_PHP5" ] && [ -d "$BUILDTMP_VBC_PHP5" ]
+if [ ! -z "$BUILDTMP_VBC_PHP" ] && [ -d "$BUILDTMP_VBC_PHP" ]
 then
-   rm -rf $BUILDTMP_VBC_PHP5
+   rm -rf $BUILDTMP_VBC_PHP
 fi
 
-if [ ! -z "$BUILDTMP_CALC_PHP5" ] && [ -d "$BUILDTMP_CALC_PHP5" ]
+if [ ! -z "$BUILDTMP_CALC_PHP" ] && [ -d "$BUILDTMP_CALC_PHP" ]
 then
-   rm -rf $BUILDTMP_CALC_PHP5
+   rm -rf $BUILDTMP_CALC_PHP
 fi
 
-if [ ! -z "$BUILDTMP_MODS_PHP5" ] && [ -d "$BUILDTMP_MODS_PHP5" ]
+if [ ! -z "$BUILDTMP_MODS_PHP" ] && [ -d "$BUILDTMP_MODS_PHP" ]
 then
-   rm -rf $BUILDTMP_MODS_PHP5
+   rm -rf $BUILDTMP_MODS_PHP
 fi
 ####################################################################################################
 
