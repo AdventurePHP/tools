@@ -178,7 +178,7 @@ RELEASEPATH=$BUILD_PATH/RELEASES
 DISTRINAME=apf
 BUILDNUMBR=$(date +"%Y-%m-%d-%H%M")
 DISTRIARCH_NOARCH=noarch
-DISTRIARCH_PHP5=php7
+DISTRIARCH_PHP=php7
 
 USER_NOBODY=nobody
 GROUP_NOBODY=None
@@ -354,18 +354,18 @@ fi
 
 if [ "$CODE_ENABLED" == "1" ] || [ "$DEMO_ENABLED" == "1" ] || [ "$EXAMPLES_ENABLED" == "1" ]
 then
-    echo "[INFO] build code bases for $DISTRIARCH_PHP5 release"
-    mkdir -p $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF
+    echo "[INFO] build code bases for $DISTRIARCH_PHP release"
+    mkdir -p $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF
 
     # code files
-    rsync -rt --exclude="tests" $CODE_SOURCE_PATH/* $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/
+    rsync -rt --exclude="tests" $CODE_SOURCE_PATH/* $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/
 
     # license file
-    cp $DIR/lgpl-3.0.txt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
+    cp $DIR/lgpl-3.0.txt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/
 
-    find $CURRENTRELEASEPATH/$DISTRIARCH_PHP5 -type f -exec touch {} \;
-    find $CURRENTRELEASEPATH/$DISTRIARCH_PHP5 -type f -exec chmod 644 {} \;
-    find $CURRENTRELEASEPATH/$DISTRIARCH_PHP5 -type d -exec chmod 755 {} \;
+    find $CURRENTRELEASEPATH/$DISTRIARCH_PHP -type f -exec touch {} \;
+    find $CURRENTRELEASEPATH/$DISTRIARCH_PHP -type f -exec chmod 644 {} \;
+    find $CURRENTRELEASEPATH/$DISTRIARCH_PHP -type d -exec chmod 755 {} \;
     #chown -R $USER_NOBODY $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
     #chgrp -R $GROUP_NOBODY $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/
 fi
@@ -378,9 +378,9 @@ mkdir -p $CURRENTRELEASEPATH/download
 
 if [ "$CODE_ENABLED" == "1" ]
 then
-   echo "[INFO] create codepack release for $DISTRIARCH_PHP5"
-   CODEPACKZIPFILENAME_PHP5=$DISTRINAME-codepack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP5
-   cd $CURRENTRELEASEPATH/$DISTRIARCH_PHP5
+   echo "[INFO] create codepack release for $DISTRIARCH_PHP"
+   CODEPACKZIPFILENAME_PHP5=$DISTRINAME-codepack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
+   cd $CURRENTRELEASEPATH/$DISTRIARCH_PHP
    zip -r $CODEPACKZIPFILENAME_PHP5.zip . >/dev/null 2>&1
    mv $CODEPACKZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
    tar -czf $CODEPACKZIPFILENAME_PHP5.tar.gz * >/dev/null 2>&1
@@ -425,15 +425,15 @@ fi
 
 if [ "$DEMO_ENABLED" == "1" ]
 then
-   echo "[INFO] generate demopack basis for $DISTRIARCH_PHP5"
-   BUILDTMP_DEMOPACK_PHP5=$CURRENTRELEASEPATH/demopack_$DISTRIARCH_PHP5
+   echo "[INFO] generate demopack basis for $DISTRIARCH_PHP"
+   BUILDTMP_DEMOPACK_PHP5=$CURRENTRELEASEPATH/demopack_$DISTRIARCH_PHP
    mkdir -p $BUILDTMP_DEMOPACK_PHP5
 
    # setup basic files
    rsync -rt $EXAMPLES_SOURCE_PATH/sandbox/* $BUILDTMP_DEMOPACK_PHP5/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_DEMOPACK_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_DEMOPACK_PHP5/APF/
 
    # license file
    cp $DIR/lgpl-3.0.txt $BUILDTMP_DEMOPACK_PHP5/
@@ -453,24 +453,24 @@ then
 
    # add selection of content
    mkdir -p $BUILDTMP_DEMOPACK_PHP5/SB/pres/content
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_154_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_013_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_014_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_098_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_012_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_047_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_006_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_134_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_067_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_004_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_137_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_023_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_030_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_107_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_144_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_145_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_161_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
-   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_162_3.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_154_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_013_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_014_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_098_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_012_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_047_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_006_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_134_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_067_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_004_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_137_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_023_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_030_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_107_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_144_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_145_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_161_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
+   cp $DOCS_SOURCE_PATH/DOCS/pres/content/c_*_162_4.X_*.html $BUILDTMP_DEMOPACK_PHP5/SB/pres/content/
 
    find $BUILDTMP_DEMOPACK_PHP5 -type f -exec touch {} \;
    find $BUILDTMP_DEMOPACK_PHP5 -type f -exec chmod 644 {} \;
@@ -483,8 +483,8 @@ fi
 
 if [ "$DEMO_ENABLED" == "1" ]
 then
-   echo "[INFO] create demopack release packages for $DISTRIARCH_PHP5"
-   DEMOPACKZIPFILENAME_PHP5=$DISTRINAME-demopack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP5
+   echo "[INFO] create demopack release packages for $DISTRIARCH_PHP"
+   DEMOPACKZIPFILENAME_PHP5=$DISTRINAME-demopack-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
    cd $BUILDTMP_DEMOPACK_PHP5
    zip -r $DEMOPACKZIPFILENAME_PHP5.zip . >/dev/null 2>&1
    mv $DEMOPACKZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
@@ -499,15 +499,15 @@ fi
 
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
-   echo "[INFO] generate vbc example basis for $DISTRIARCH_PHP5"
-   BUILDTMP_VBC_PHP5=$CURRENTRELEASEPATH/vbc_$DISTRIARCH_PHP5
+   echo "[INFO] generate vbc example basis for $DISTRIARCH_PHP"
+   BUILDTMP_VBC_PHP5=$CURRENTRELEASEPATH/vbc_$DISTRIARCH_PHP
    mkdir -p $BUILDTMP_VBC_PHP5
 
    # setup basic files
    rsync -rt $EXAMPLES_SOURCE_PATH/viewbasedcaching/* $BUILDTMP_VBC_PHP5/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_VBC_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_VBC_PHP5/APF/
 
    # license file
    cp $DIR/lgpl-3.0.txt $BUILDTMP_VBC_PHP5/
@@ -523,8 +523,8 @@ fi
 
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
-   echo "[INFO] create vbc example release packages for $DISTRIARCH_PHP5"
-   VBCZIPFILENAME_PHP5=$DISTRINAME-vbc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP5
+   echo "[INFO] create vbc example release packages for $DISTRIARCH_PHP"
+   VBCZIPFILENAME_PHP5=$DISTRINAME-vbc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
    cd $BUILDTMP_VBC_PHP5
    zip -r $VBCZIPFILENAME_PHP5.zip . >/dev/null 2>&1
    mv $VBCZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
@@ -539,15 +539,15 @@ fi
 
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
-   echo "[INFO] generate calc example basis for $DISTRIARCH_PHP5"
-   BUILDTMP_CALC_PHP5=$CURRENTRELEASEPATH/calc_$DISTRIARCH_PHP5
+   echo "[INFO] generate calc example basis for $DISTRIARCH_PHP"
+   BUILDTMP_CALC_PHP5=$CURRENTRELEASEPATH/calc_$DISTRIARCH_PHP
    mkdir -p $BUILDTMP_CALC_PHP5
 
    # setup basic files
    rsync -rt $EXAMPLES_SOURCE_PATH/calc/* $BUILDTMP_CALC_PHP5/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_CALC_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_CALC_PHP5/APF/
 
    # license file
    cp $DIR/lgpl-3.0.txt $BUILDTMP_CALC_PHP5/
@@ -563,8 +563,8 @@ fi
 
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
-   echo "[INFO] create calc example release packages for $DISTRIARCH_PHP5"
-   CALCZIPFILENAME_PHP5=$DISTRINAME-calc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP5
+   echo "[INFO] create calc example release packages for $DISTRIARCH_PHP"
+   CALCZIPFILENAME_PHP5=$DISTRINAME-calc-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
    cd $BUILDTMP_CALC_PHP5
    zip -r $CALCZIPFILENAME_PHP5.zip . >/dev/null 2>&1
    mv $CALCZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
@@ -579,15 +579,15 @@ fi
 
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
-   echo "[INFO] generate modules example basis for $DISTRIARCH_PHP5"
-   BUILDTMP_MODS_PHP5=$CURRENTRELEASEPATH/mods_$DISTRIARCH_PHP5
+   echo "[INFO] generate modules example basis for $DISTRIARCH_PHP"
+   BUILDTMP_MODS_PHP5=$CURRENTRELEASEPATH/mods_$DISTRIARCH_PHP
    mkdir -p $BUILDTMP_MODS_PHP5
 
    # setup basic files
    rsync -rt $EXAMPLES_SOURCE_PATH/dynamic-modules/* $BUILDTMP_MODS_PHP5/
 
    # add framework code
-   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP5/APF/* $BUILDTMP_MODS_PHP5/APF/
+   rsync -rt $CURRENTRELEASEPATH/$DISTRIARCH_PHP/APF/* $BUILDTMP_MODS_PHP5/APF/
 
    # license file
    cp $DIR/lgpl-3.0.txt $BUILDTMP_MODS_PHP5/
@@ -603,8 +603,8 @@ fi
 
 if [ "$EXAMPLES_ENABLED" == "1" ]
 then
-   echo "[INFO] create modules example release packages for $DISTRIARCH_PHP5"
-   MODSZIPFILENAME_PHP5=$DISTRINAME-modules-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP5
+   echo "[INFO] create modules example release packages for $DISTRIARCH_PHP"
+   MODSZIPFILENAME_PHP5=$DISTRINAME-modules-example-$BUILDVERS-$BUILDNUMBR-$DISTRIARCH_PHP
    cd $BUILDTMP_MODS_PHP5
    zip -r $MODSZIPFILENAME_PHP5.zip . >/dev/null 2>&1
    mv $MODSZIPFILENAME_PHP5.zip $CURRENTRELEASEPATH/download/
@@ -625,9 +625,9 @@ then
    rm -rf $WORKSPACE
 fi
 
-if [ ! -z "$CURRENTRELEASEPATH/$DISTRIARCH_PHP5" ] && [ -d "$CURRENTRELEASEPATH/$DISTRIARCH_PHP5" ]
+if [ ! -z "$CURRENTRELEASEPATH/$DISTRIARCH_PHP" ] && [ -d "$CURRENTRELEASEPATH/$DISTRIARCH_PHP" ]
 then
-   rm -rf $CURRENTRELEASEPATH/$DISTRIARCH_PHP5
+   rm -rf $CURRENTRELEASEPATH/$DISTRIARCH_PHP
 fi
 
 if [ ! -z "$BUILDTMP_DEMOPACK_PHP5" ] && [ -d "$BUILDTMP_DEMOPACK_PHP5" ]
