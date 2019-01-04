@@ -1,0 +1,8 @@
+deploy:
+  provider: script
+  script: bash build/snapshot/create-git-snapshot.sh master 4.0
+  on:
+    branch: master
+after_deploy:
+  - ls -sahl build/files/snapshot/
+  - tar -tzvf build/files/snapshot/apf-*.tar.gz

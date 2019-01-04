@@ -1,6 +1,7 @@
 #!/bin/bash
 # define git url
-GIT_URL=https://github.com/AdventurePHP/code.git
+GIT_URL_CODE=https://github.com/AdventurePHP/code.git
+GIT_URL_CONFIG=https://github.com/AdventurePHP/config.git
 
 # functions
 
@@ -59,7 +60,7 @@ echo "[INFO] Using workspace $WORKSPACE to prepare snapshot release ..."
 
 # export code from git
 echo "[INFO] Fetching sources from GitHub ..."
-git clone --depth 1 --branch $GIT_BRANCH $GIT_URL $WORKSPACE/build > /dev/null 2>&1
+git clone --depth 1 --branch $GIT_BRANCH $GIT_URL_CODE $WORKSPACE/build
 
 if ! [ "$?" -eq 0 ]; then
     echo "Error: Could not clone git repo. Exiting."
@@ -70,8 +71,8 @@ fi
 
 # export config from git
 echo "[INFO] Fetching sample config from GitHub ..."
-[ -d $WORKSPACE/config ] || mkdir $WORKSPACE/config
-git clone --depth 1 --branch $GIT_BRANCH $GIT_URL $WORKSPACE/build/config > /dev/null 2>&1
+[ -d $WORKSPACE/build/config ] || mkdir $WORKSPACE/build/config
+git clone --depth 1 --branch $GIT_BRANCH $GIT_URL_CONFIG $WORKSPACE/build/config
 
 if ! [ "$?" -eq 0 ]; then
     echo "Error: Could not clone git repo. Exiting."
@@ -82,8 +83,10 @@ fi
 
 # create snapshot file
 echo "[INFO] Creating tar.gz file ..."
-SNAPSHOT_FILE=apf-$REL_VERSION-snapshot-php5.tar.gz
-tar -czf $WORKSPACE/$SNAPSHOT_FILE -C $WORKSPACE --strip-components=1 build/
+SNAPSHOT_FILE=apf-$REL_VERSION-snapshot-php7.tar.gz
+cd $WORKSPACE/build
+tar -cz --exclude=.travis.yml --exclude=composer.json --exclude=tests -f $WORKSPACE/$SNAPSHOT_FILE *
+cd -
 
 if ! [ "$?" -eq 0 ]; then
     echo "Error: Could no compress snapshot release. Exiting."
