@@ -1,4 +1,4 @@
-language: generic
+language: minimal
 deploy:
   provider: script
   script: bash build/snapshot/create-git-snapshot.sh master 4.0
